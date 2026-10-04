@@ -1,0 +1,5 @@
+# Copy to /etc/iptsd.d/60-palm-rejection.conf, then: sudo systemctl restart 'iptsd@*'
+# Ignores finger and palm touches while the pen is near the screen, so you can
+# rest your hand on the glass while writing. Touch comes back when the pen moves away.
+[Touchscreen]
+DisableOnStylus = true

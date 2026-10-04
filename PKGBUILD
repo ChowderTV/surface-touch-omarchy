@@ -4,7 +4,7 @@
 #  - a boot-time service that binds mei_me to the touch chip and loads ipts
 pkgname=surface-touch-omarchy
 pkgver=1.1
-pkgrel=1
+pkgrel=2
 pkgdesc='Surface IPTS touchscreen and pen (ipts DKMS + iptsd) without the linux-surface kernel'
 arch=('x86_64')
 url='https://github.com/ChowderTV/surface-touch-omarchy'
@@ -26,6 +26,7 @@ source=("iptsd-$_iptsd_ver.tar.gz::https://github.com/linux-surface/iptsd/archiv
         'surface-touch-setup'
         'surface-touch.service'
         '50-pen-sensitivity.conf.example'
+        '60-palm-rejection.conf.example'
         'surface-pen-tune')
 sha256sums=('af0aab95387a5107dfa8ac1ef90a29289f6b9d06e1a59121c9e5e732b27a266c'
             'ccc2f38598d9a49e19aa88d01c797654468b86f07beda4d355067a9d9083880e'
@@ -33,6 +34,7 @@ sha256sums=('af0aab95387a5107dfa8ac1ef90a29289f6b9d06e1a59121c9e5e732b27a266c'
             '2a74a0ce62f2c5f46417cb152acab898d104f35022fdee56a631844ef34d1168'
             '91d9a6979293f28609d33eefbb4e489df674ff8834bc190c139f804c71627839'
             '2e3c29683ac33b2f761d00d84a6fdf925449ddda48b9115fb1d8f4e6f4cd73b7'
+            '598493ae1c51b7ae97c9385405652e94e362ddc64c9173872e727672f9fda975'
             'ef4cfa374371a5c388a795e130188d742cef9405c6928f135032923b1cbe8b46')
 
 prepare() {
@@ -72,5 +74,5 @@ package() {
 	install -Dm755 surface-touch-setup "$pkgdir/usr/lib/surface-touch/setup"
 	install -Dm644 surface-touch.service "$pkgdir/usr/lib/systemd/system/surface-touch.service"
 	install -Dm755 surface-pen-tune "$pkgdir/usr/bin/surface-pen-tune"
-	install -Dm644 50-pen-sensitivity.conf.example -t "$pkgdir/usr/share/doc/$pkgname/"
+	install -Dm644 50-pen-sensitivity.conf.example 60-palm-rejection.conf.example -t "$pkgdir/usr/share/doc/$pkgname/"
 }

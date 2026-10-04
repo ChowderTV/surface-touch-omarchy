@@ -9,12 +9,14 @@ Normally, Surface touch on Linux needs the linux-surface kernel, because the tou
 ## What works
 
 - Multi-touch finger input
-- Surface Pen: inking, pressure, hover, side button
+- Surface Pen: inking, pressure, hover, side button, eraser
+- Palm rejection (optional, see [Palm rejection](#palm-rejection))
+- Suspend/resume
 - Survives reboots, and DKMS rebuilds the module automatically on kernel updates
 
-Not yet tested: suspend/resume, other Surface models.
+Not yet tested: other Surface models.
 
-**Known issue:** pen lines sometimes break up mid-stroke. Debug captures show the pen's signal dropping out while the tip is still on the glass, which points to a weak pen battery. That hasn't been confirmed yet. See [Pen troubleshooting](#pen-troubleshooting).
+**App support varies.** Some apps handle pen input poorly. Pinta, for example, ignores the eraser end and can break up lines. Xournal++, Rnote and Krita work well. See [Pen troubleshooting](#pen-troubleshooting).
 
 ## Requirements
 
@@ -72,14 +74,27 @@ Then it loads `ipts`, and iptsd's udev rule starts the daemon.
 - **Less isolation for one device.** Passthrough mode means the IOMMU no longer restricts DMA from the devices in that group (the touch chip and the main Intel ME). It's narrower than `intel_iommu=off`, but it's still a security trade-off you should know about.
 - **The driver is tied to linux-surface's 6.19 patch.** If a future kernel changes an API the driver uses, the DKMS build will fail. You'd then need to update `_ls_commit` to a newer linux-surface patch.
 
+## Palm rejection
+
+By default, a resting hand can still register as touches while you write. To ignore all finger and palm touches while the pen is near the screen:
+
+```sh
+sudo cp /usr/share/doc/surface-touch-omarchy/60-palm-rejection.conf.example /etc/iptsd.d/60-palm-rejection.conf
+sudo systemctl restart 'iptsd@*'
+```
+
+Touch comes back as soon as the pen moves away. To undo it, delete the file and restart iptsd again.
+
 ## Pen troubleshooting
 
+- **Lines break up or the eraser does nothing in one app:** try another app first. Pinta, for example, doesn't support the eraser end. Xournal++, Rnote and Krita do.
 - **Pen does nothing or lines break up:** replace the pen's **AAAA battery** first. Bluetooth pairing only powers the top button. Inking runs on the battery, and a weak one makes the pen stop transmitting mid-stroke.
-- **Lines still break with a good battery:** iptsd may be dropping contact because the pressure signal is near its threshold. Try lowering it:
+- **Lines still break in a good app with a good battery:** iptsd may be dropping contact because the pressure signal is near its threshold. Try lowering it:
   ```sh
   sudo surface-pen-tune 3000     # iptsd default is 10000
   ```
   This writes `/etc/iptsd.d/50-pen-sensitivity.conf` and restarts iptsd. If the pen starts inking while it's only hovering, raise the number. An example config is in `/usr/share/doc/surface-touch-omarchy/`.
+- **Wobbly lines:** iptsd sends the raw pen position and leaves smoothing to apps. In Xournal++, turn it on under Edit → Preferences → Input System → Input stabilization. In Krita, set Brush Smoothing to Stabilizer in the brush Tool Options.
 - To capture raw device data for a bug report: `sudo iptsd-dump /dev/hidrawN` (find N with `systemctl list-units 'iptsd@*'`)
 
 ## Credits
