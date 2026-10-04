@@ -1,0 +1,34 @@
+#!/bin/bash
+# Bring up the Surface IPTS touchscreen on a kernel without linux-surface patches:
+# bind mei_me to the touch ME chip, put its IOMMU group in passthrough, load ipts.
+set -u
+TOUCH=0000:00:16.4
+HECI=0000:00:16.0
+DRV=/sys/bus/pci/drivers/mei_me
+# mei_cfg index 9 = MEI_ME_PCH12_CFG (what linux-surface uses for 34e4)
+NEW_ID="8086 34e4 ffffffff ffffffff 0 0 9"
+
+[ -e /sys/bus/pci/devices/$TOUCH ] || exit 0
+modprobe mei_me
+
+# Let udev finish attaching the main ME chip first
+for _ in $(seq 50); do [ -e $DRV/$HECI ] && break; sleep 0.2; done
+
+if [ ! -e $DRV/$TOUCH ]; then
+	for d in $HECI $TOUCH; do
+		[ -e $DRV/$d ] && echo $d > $DRV/unbind
+	done
+
+	if link=$(readlink /sys/bus/pci/devices/$TOUCH/iommu_group); then
+		echo identity > /sys/kernel/iommu_groups/$(basename "$link")/type ||
+			echo "warning: could not set IOMMU group to identity" >&2
+	fi
+
+	echo "$NEW_ID" > $DRV/new_id 2>/dev/null || true
+	for d in $HECI $TOUCH; do
+		# new_id usually auto-binds the touch chip already; a racing bind just reports EBUSY
+		[ -e $DRV/$d ] || echo $d > $DRV/bind 2>/dev/null || true
+	done
+fi
+
+modprobe ipts

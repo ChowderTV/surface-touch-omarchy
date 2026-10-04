@@ -1,0 +1,13 @@
+post_install() {
+	systemctl daemon-reload
+	systemctl enable surface-touch.service
+	echo ">> Reboot to start touch automatically."
+}
+
+post_upgrade() {
+	systemctl daemon-reload
+}
+
+pre_remove() {
+	systemctl disable surface-touch.service
+}

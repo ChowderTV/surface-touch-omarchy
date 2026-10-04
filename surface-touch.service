@@ -1,0 +1,12 @@
+[Unit]
+Description=Surface IPTS touchscreen setup
+After=systemd-udev-trigger.service systemd-modules-load.service
+ConditionPathExists=/sys/bus/pci/devices/0000:00:16.4
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/lib/surface-touch/setup
+
+[Install]
+WantedBy=multi-user.target

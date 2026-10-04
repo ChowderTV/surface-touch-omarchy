@@ -1,0 +1,6 @@
+# Copy to /etc/iptsd.d/50-pen-sensitivity.conf (or run: sudo surface-pen-tune 3000)
+# If pen lines break up mid-stroke, iptsd may be dropping contact because the
+# pressure signal sits near its threshold (default 10000). Lower = more forgiving;
+# if the pen starts inking while hovering, raise it again.
+[DFT]
+FreqMinMag = 3000

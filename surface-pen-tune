@@ -1,0 +1,15 @@
+#!/bin/bash
+# Lower iptsd's pressure-signal threshold so weak pen signal doesn't break lines.
+# Usage: sudo surface-pen-tune [FreqMinMag]   (iptsd default 10000)
+set -eu
+[ "$(id -u)" = 0 ] || { echo "run with: sudo $0 ${1:-}"; exit 1; }
+V=${1:-3000}
+mkdir -p /etc/iptsd.d
+cat > /etc/iptsd.d/50-pen-sensitivity.conf <<CONF
+# Written by surface-pen-tune. The pen pressure signal can sit near the default 10000, which drops
+# contact mid-stroke. Lower = more forgiving.
+[DFT]
+FreqMinMag = $V
+CONF
+systemctl restart 'iptsd@*'
+echo "FreqMinMag=$V applied, iptsd restarted. Try drawing again."

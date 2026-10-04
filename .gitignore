@@ -1,0 +1,7 @@
+/src/
+/pkg/
+/build/
+*.pkg.tar.zst
+*.tar.gz
+*.patch
+iptsd-*/
