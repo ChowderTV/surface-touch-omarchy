@@ -37,9 +37,13 @@ sha256sums=('af0aab95387a5107dfa8ac1ef90a29289f6b9d06e1a59121c9e5e732b27a266c'
 
 prepare() {
 	# Pull only the standalone driver out of the kernel patch
+	# (in its own throwaway git repo: inside a parent checkout, git apply
+	# would silently skip paths outside the current directory)
 	rm -rf ipts-src && mkdir ipts-src
-	git apply --directory=ipts-src --include='ipts-src/drivers/hid/ipts/*' \
-		"0005-ipts-$_ls_commit.patch"
+	git -C ipts-src init -q
+	git -C ipts-src apply --include='drivers/hid/ipts/*' \
+		"$srcdir/0005-ipts-$_ls_commit.patch"
+	[ -f ipts-src/drivers/hid/ipts/main.c ] || { error "ipts driver not extracted"; return 1; }
 }
 
 build() {
